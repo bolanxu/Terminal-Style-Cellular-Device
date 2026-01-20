@@ -2,8 +2,6 @@
 
 A DIY, terminal-first cellular communication device designed as a **personal network terminal** rather than a modern smartphone.
 
-This project intentionally delays committing to a specific cellular modem and provider in order to keep the architecture modular, inspectable, and adaptable as constraints evolve.
-
 ---
 
 ## Why This Exists
@@ -33,20 +31,30 @@ Just commands, responses, and visibility into the system.
 
 All features are implemented explicitly and synchronously; nothing happens in the background without user intent.
 
+## What This Is (and Isn’t)
+
+✅ A personal communication terminal
+
+✅ A learning platform for embedded and networking systems
+
+✅ A constraint-driven engineering project
+
+❌ A smartphone
+
+❌ An app platform
+
+❌ A consumer product
+
 ---
 
 ## Design Philosophy
 
-### Constraints as a Design Tool
-
-Instead of fighting limitations, the project embraces them:
+### What makes this GEEKY
 
 * Text-only interface
 * No app layer
 * No multitasking
-* Single firmware image
-
-Every feature must justify its existence.
+* Clear case and beautiful PCB
 
 ---
 
@@ -55,13 +63,11 @@ Every feature must justify its existence.
 | Subsystem       | Description                                  |
 | --------------- | -------------------------------------------- |
 | Microcontroller | Main command processor and UI controller     |
-| Cellular Modem  | LTE / cellular interface (provider-agnostic) |
+| Cellular Modem  | LTE-M / cellular interface                     |
 | Display         | Monochrome terminal output                   |
 | Input           | Keyboard matrix + rotary encoder             |
 | Power           | Li-ion battery + regulation                  |
 | Antennas        | Cellular + optional GNSS                     |
-
-Specific modem and provider choices are intentionally deferred to keep the project flexible during early development.
 
 ---
 
@@ -83,26 +89,12 @@ BAT: 82%
 
 ---
 
-## Firmware Structure (Planned)
-
-```
-firmware/
-├─ core/
-│  ├─ input_manager/
-│  ├─ display_driver/
-│  ├─ modem_interface/
-│  ├─ command_parser/
-│  ├─ power_manager/
-│  └─ logger/
-└─ main.c
-```
-
 ---
 
 ## Command Interface (Planned)
 
 ```
-sms send <number> <message>
+sms send <contact> <message>
 sms read
 gps get
 status
@@ -114,25 +106,13 @@ Incoming messages may also be parsed as structured commands, allowing limited re
 
 ---
 
-## Modem & Provider Selection (Deferred)
-
-The choice of cellular modem and network provider is intentionally postponed.
-
-This allows:
-
-* Evaluation of power consumption vs. capability
-* Comparison of LTE Cat-M, NB-IoT, or other options
-* Flexibility in data plans and coverage
-
-The architecture assumes a modem controlled via a command interface (e.g., AT commands), but avoids hard dependencies until later development stages.
-
 ---
 
 ## Development Status
 
 * [x] Project scope defined
 * [x] System architecture outlined
-* [ ] Modem selection
+* [x] Modem selection
 * [ ] Power subsystem validation
 * [ ] Basic terminal UI
 * [ ] Input handling
@@ -141,21 +121,11 @@ The architecture assumes a modem controlled via a command interface (e.g., AT co
 
 ---
 
-## What This Is (and Isn’t)
+## Dev Log
 
-✅ A personal communication terminal
-
-✅ A learning platform for embedded and networking systems
-
-✅ A constraint-driven engineering project
-
-❌ A smartphone
-
-❌ An app platform
-
-❌ A consumer product
-
----
+### January 20, 2026
+* Ordered SIM7080G as modem choice
+* Ordered a SIM card from Hologram (Thanks a lot to Felix from Hologram for all of your help!)
 
 ## License
 
