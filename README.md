@@ -144,11 +144,15 @@ The architecture assumes a modem controlled via a command interface (e.g., AT co
 ## What This Is (and Isn’t)
 
 ✅ A personal communication terminal
+
 ✅ A learning platform for embedded and networking systems
+
 ✅ A constraint-driven engineering project
 
 ❌ A smartphone
+
 ❌ An app platform
+
 ❌ A consumer product
 
 ---
