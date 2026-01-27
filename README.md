@@ -127,6 +127,10 @@ Incoming messages may also be parsed as structured commands, allowing limited re
 * Ordered SIM7080G as modem choice
 * Ordered a SIM card from Hologram (Thanks a lot to Felix from Hologram for all of your help!)
 
+### January 27, 2026
+* SIM7080G modem module came in from AliExpress
+  
+
 ## License
 
 MIT (subject to change)
