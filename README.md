@@ -129,7 +129,9 @@ Incoming messages may also be parsed as structured commands, allowing limited re
 
 ### January 27, 2026
 * SIM7080G modem module came in from AliExpress
-  
+
+### February 1, 2026
+Added a complete web-to-Arduino chat system using a SIM7080G modem, including the Arduino sketch, a Flask-based backend, and a simple web frontend. The changes enable bidirectional messaging between a web interface and an Arduino device via HTTP endpoints, using a SQLite database for message storage and retrieval.
 
 ## License
 
