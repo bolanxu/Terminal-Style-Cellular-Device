@@ -3,8 +3,8 @@
 // ================== CONFIG ==================
 SoftwareSerial modem(7, 8);   // RX, TX
 
-const String SERVER = "bolanxu.pythonanywhere.com"; // NO http://
-const String APN    = "hologram";                         // <-- CHANGE
+const String SERVER = "username.pythonanywhere.com"; // CHANGE: Change 'username' to your pythonanywhere username
+const String APN    = "hologram";                         // CHANGE: Change this to your LTE-M SIM carrier
 // ============================================
 
 bool sendCheck(String cmd, String expected, int timeout = 2000);
