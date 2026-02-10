@@ -2,6 +2,8 @@
 
 A DIY, terminal-first cellular communication device designed as a **personal network terminal** rather than a modern smartphone.
 
+**Take a look at the [Hackaday Project Page](https://hackaday.io/project/204892-a-terminal-style-phone-for-the-geek) for more information!**
+
 ---
 
 ## Why This Exists
@@ -132,6 +134,9 @@ Incoming messages may also be parsed as structured commands, allowing limited re
 
 ### February 1, 2026
 Added a complete web-to-Arduino chat system using a SIM7080G modem, including the Arduino sketch, a Flask-based backend, and a simple web frontend. The changes enable bidirectional messaging between a web interface and an Arduino device via HTTP endpoints, using a SQLite database for message storage and retrieval.
+
+### February 9, 2026
+Implemented hardware prototype of test terminal interface with Arduino UNO and TFT screen. Text input is through serial port. Link to more details on the [Hackaday Post](https://hackaday.io/project/204892-a-terminal-style-phone-for-the-geek/log/246067-terminal-on-an-arduino-with-tft-display).
 
 ## License
 
