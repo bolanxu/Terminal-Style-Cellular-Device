@@ -1,0 +1,27 @@
+{% extends "auth_base.html" %}
+{% block title %}Login — Terminal Phone{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+  <h2>Sign in</h2>
+  <div class="subtitle">// enter credentials to access your terminal</div>
+
+  <form method="POST">
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" name="username" placeholder="your_handle" autocomplete="username" required autofocus>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" name="password" placeholder="••••••••••" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="btn-submit">Connect →</button>
+  </form>
+
+  <div class="divider"><span>OR</span></div>
+</div>
+
+<div class="auth-footer">
+  No account? <a href="{{ url_for('auth.signup') }}">Create one</a>
+</div>
+{% endblock %}

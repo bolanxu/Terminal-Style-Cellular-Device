@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Terminal Phone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:          #07090c;
+    --bg2:         #0c1016;
+    --bg3:         #111820;
+    --bg4:         #151f28;
+    --border:      #1a2633;
+    --border2:     #223040;
+    --accent:      #3de8c0;
+    --accent-dim:  rgba(61,232,192,0.12);
+    --accent-glow: rgba(61,232,192,0.2);
+    --modem:       #f0c040;
+    --modem-dim:   rgba(240,192,64,0.1);
+    --text:        #a8bfcc;
+    --text-bright: #ddeaf0;
+    --text-dim:    #3d5060;
+    --danger:      #ff4d6d;
+    --mono:        'IBM Plex Mono', monospace;
+    --sans:        'Syne', sans-serif;
+    --radius:      6px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+  }
+
+  /* ═══════════════════════════════════════
+     LAYOUT
+  ═══════════════════════════════════════ */
+  .shell {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 860px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* ═══════════════════════════════════════
+     TOPBAR
+  ═══════════════════════════════════════ */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 52px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .topbar::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.3;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+    animation: pulse 2.5s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--accent); }
+    50%       { opacity: 0.5; box-shadow: 0 0 2px var(--accent); }
+  }
+
+  .topbar-title {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: 0.3px;
+  }
+  .topbar-title span { color: var(--accent); }
+
+  .topbar-user {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .topbar-user strong { color: var(--accent); font-weight: 500; }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-icon {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text-dim);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .btn-icon:hover { border-color: var(--accent); color: var(--accent); }
+
+  {% if current_user.is_admin %}
+  .btn-admin {
+    border-color: rgba(61,232,192,0.3);
+    color: var(--accent);
+  }
+  {% endif %}
+
+  /* ═══════════════════════════════════════
+     CHANNEL BAR
+  ═══════════════════════════════════════ */
+  .channel-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 20px;
+    height: 36px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .channel-tag {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    padding-right: 14px;
+    border-right: 1px solid var(--border);
+    margin-right: 14px;
+  }
+  .channel-name {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+  .channel-name::before { content: '# '; opacity: 0.5; }
+
+  .unread-badge {
+    margin-left: auto;
+    background: var(--modem-dim);
+    border: 1px solid rgba(240,192,64,0.2);
+    color: var(--modem);
+    font-size: 9px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    display: none;
+  }
+  .unread-badge.visible { display: inline-block; }
+
+  /* ═══════════════════════════════════════
+     MESSAGE AREA
+  ═══════════════════════════════════════ */
+  .messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 20px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  .messages-area::-webkit-scrollbar { width: 4px; }
+  .messages-area::-webkit-scrollbar-track { background: transparent; }
+  .messages-area::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* Date divider */
+  .date-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0 10px;
+    opacity: 0.5;
+  }
+  .date-divider::before, .date-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .date-divider span {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* Message bubble */
+  .msg {
+    display: flex;
+    flex-direction: column;
+    max-width: 78%;
+    animation: msgIn 0.2s ease both;
+  }
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg.web  { align-self: flex-end; align-items: flex-end; }
+  .msg.modem { align-self: flex-start; align-items: flex-start; }
+
+  .msg-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    padding: 0 4px;
+  }
+
+  .msg-sender {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .msg.web  .msg-sender { color: var(--accent); }
+  .msg.modem .msg-sender { color: var(--modem); }
+
+  .msg-time {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  .msg-bubble {
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    line-height: 1.55;
+    letter-spacing: 0.2px;
+    word-break: break-word;
+    position: relative;
+  }
+
+  .msg.web .msg-bubble {
+    background: var(--accent-dim);
+    border: 1px solid rgba(61,232,192,0.18);
+    color: var(--text-bright);
+    border-bottom-right-radius: 2px;
+  }
+
+  .msg.modem .msg-bubble {
+    background: var(--modem-dim);
+    border: 1px solid rgba(240,192,64,0.18);
+    color: #f5dfa0;
+    border-bottom-left-radius: 2px;
+  }
+
+  /* Consecutive messages — tighten gap */
+  .msg + .msg.web,
+  .msg + .msg.modem {
+    margin-top: 2px;
+  }
+
+  /* Empty state */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    opacity: 0.3;
+    pointer-events: none;
+    padding-bottom: 40px;
+  }
+  .empty-state .icon { font-size: 32px; }
+  .empty-state p {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  /* ═══════════════════════════════════════
+     TYPING INDICATOR
+  ═══════════════════════════════════════ */
+  .typing-row {
+    height: 24px;
+    padding: 0 20px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+  .typing-indicator {
+    display: none;
+    align-items: center;
+    gap: 4px;
+  }
+  .typing-indicator.show { display: flex; }
+  .typing-indicator span {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-right: 4px;
+  }
+  .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--text-dim); animation: bounce 1.2s infinite; }
+  .dot:nth-child(3) { animation-delay: 0.15s; }
+  .dot:nth-child(4) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30%           { transform: translateY(-4px); }
+  }
+
+  /* ═══════════════════════════════════════
+     INPUT BAR
+  ═══════════════════════════════════════ */
+  .input-bar {
+    padding: 12px 16px 16px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 8px 10px 8px 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input-row:focus-within {
+    border-color: rgba(61,232,192,0.35);
+    box-shadow: 0 0 0 3px rgba(61,232,192,0.07);
+  }
+
+  #msg-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-bright);
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    resize: none;
+    max-height: 120px;
+    line-height: 1.5;
+    padding: 4px 0;
+    overflow-y: auto;
+  }
+  #msg-input::placeholder { color: var(--text-dim); }
+  #msg-input::-webkit-scrollbar { width: 3px; }
+  #msg-input::-webkit-scrollbar-thumb { background: var(--border2); }
+
+  .send-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, transform 0.1s;
+    color: #040e0b;
+  }
+  .send-btn:hover { background: #5cf5d5; }
+  .send-btn:active { transform: scale(0.94); }
+  .send-btn:disabled { background: var(--border2); color: var(--text-dim); cursor: not-allowed; }
+  .send-btn svg { width: 16px; height: 16px; }
+
+  .input-hint {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 1.5px;
+    text-align: center;
+    margin-top: 8px;
+    text-transform: uppercase;
+  }
+
+  /* ═══════════════════════════════════════
+     SCAN LINE EFFECT (subtle CRT)
+  ═══════════════════════════════════════ */
+  .messages-area::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* ═══════════════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════════════ */
+  @media (max-width: 600px) {
+    .topbar-user { display: none; }
+    .msg { max-width: 90%; }
+    .channel-bar { padding: 0 14px; }
+    .messages-area { padding: 14px 14px 8px; }
+    .input-bar { padding: 10px 12px 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="status-dot" id="status-dot"></div>
+      <div class="topbar-title">Terminal<span>Phone</span></div>
+    </div>
+    <div class="topbar-user">
+      <strong>{{ current_user.username }}</strong>
+      {% if current_user.phone %}
+        &nbsp;·&nbsp; {{ current_user.phone[:3] }}·····{{ current_user.phone[-2:] }}
+      {% endif %}
+    </div>
+    <div class="topbar-right">
+      {% if current_user.is_admin %}
+      <a href="{{ url_for('admin.dashboard') }}" class="btn-icon btn-admin">⬡ Admin</a>
+      {% endif %}
+      <a href="{{ url_for('auth.logout') }}" class="btn-icon">⏻ Exit</a>
+    </div>
+  </header>
+
+  <!-- CHANNEL BAR -->
+  <div class="channel-bar">
+    <div class="channel-tag">Channel</div>
+    <div class="channel-name">sms-bridge</div>
+    <div class="unread-badge" id="unread-badge">● NEW</div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="messages-area" id="messages-area">
+    <div class="empty-state" id="empty-state">
+      <div class="icon">◎</div>
+      <p>No messages yet</p>
+    </div>
+  </div>
+
+  <!-- TYPING ROW -->
+  <div class="typing-row">
+    <div class="typing-indicator" id="typing-indicator">
+      <span>modem</span>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <!-- INPUT BAR -->
+  <div class="input-bar">
+    <div class="input-row">
+      <textarea id="msg-input" rows="1" placeholder="Type a message…" maxlength="160"></textarea>
+      <button class="send-btn" id="send-btn" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+    <div class="input-hint">Enter to send &nbsp;·&nbsp; Shift+Enter for newline &nbsp;·&nbsp; Max 160 chars</div>
+  </div>
+
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let lastMsgCount   = 0;
+  let lastMsgId      = null;   // track newest rendered message
+  let isAtBottom     = true;
+  let pollInterval   = null;
+  const area         = document.getElementById('messages-area');
+  const input        = document.getElementById('msg-input');
+  const sendBtn      = document.getElementById('send-btn');
+  const emptyState   = document.getElementById('empty-state');
+  const unreadBadge  = document.getElementById('unread-badge');
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function formatTime(isoOrNull) {
+    if (!isoOrNull) return '';
+    try {
+      const d = new Date(isoOrNull);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch { return ''; }
+  }
+
+  function formatDate(isoOrNull) {
+    if (!isoOrNull) return '';
+    try {
+      const d  = new Date(isoOrNull);
+      const now = new Date();
+      const isToday = d.toDateString() === now.toDateString();
+      const yesterday = new Date(now); yesterday.setDate(now.getDate()-1);
+      const isYesterday = d.toDateString() === yesterday.toDateString();
+      if (isToday)     return 'Today';
+      if (isYesterday) return 'Yesterday';
+      return d.toLocaleDateString([], { weekday:'long', month:'short', day:'numeric' });
+    } catch { return ''; }
+  }
+
+  function scrollToBottom(force = false) {
+    if (force || isAtBottom) {
+      area.scrollTop = area.scrollHeight;
+    }
+  }
+
+  area.addEventListener('scroll', () => {
+    isAtBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 60;
+    if (isAtBottom) {
+      unreadBadge.classList.remove('visible');
+    }
+  });
+
+  // ── Render messages ────────────────────────────────────────────────────────
+  function renderMessages(msgs) {
+    if (!msgs || msgs.length === 0) {
+      emptyState.style.display = 'flex';
+      return;
+    }
+    emptyState.style.display = 'none';
+
+    // Build a set of existing rendered message keys (sender+content+time)
+    // For simplicity we re-render fully on change in count
+    if (msgs.length === lastMsgCount) return;
+    lastMsgCount = msgs.length;
+
+    // Clear non-divider nodes and re-render
+    // (Messages are limited to 20 so this is fine)
+    area.innerHTML = '';
+
+    let lastDateLabel = null;
+
+    msgs.forEach((msg, i) => {
+      const cls     = msg.sender === 'WEB' ? 'web' : 'modem';
+      const label   = msg.sender === 'WEB' ? 'You' : 'Modem';
+      const timeStr = formatTime(msg.timestamp);
+      const dateStr = formatDate(msg.timestamp);
+
+      // Date divider
+      if (dateStr && dateStr !== lastDateLabel) {
+        lastDateLabel = dateStr;
+        const div = document.createElement('div');
+        div.className = 'date-divider';
+        div.innerHTML = `<span>${dateStr}</span>`;
+        area.appendChild(div);
+      }
+
+      const wrap = document.createElement('div');
+      wrap.className = `msg ${cls}`;
+      wrap.innerHTML = `
+        <div class="msg-meta">
+          <span class="msg-sender">${label}</span>
+          ${timeStr ? `<span class="msg-time">${timeStr}</span>` : ''}
+        </div>
+        <div class="msg-bubble">${escHtml(msg.content)}</div>
+      `;
+      area.appendChild(wrap);
+    });
+
+    scrollToBottom(lastMsgCount === msgs.length ? false : true);
+
+    // If user scrolled up and new modem message arrived, show unread badge
+    const lastMsg = msgs[msgs.length - 1];
+    if (!isAtBottom && lastMsg && lastMsg.sender === 'MODEM') {
+      unreadBadge.classList.add('visible');
+    }
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/\n/g, '<br>');
+  }
+
+  // ── Poll ───────────────────────────────────────────────────────────────────
+  async function poll() {
+    try {
+      const res  = await fetch('/messages');
+      const msgs = await res.json();
+      renderMessages(msgs);
+    } catch (e) {
+      console.warn('Poll error:', e);
+    }
+  }
+
+  // ── Send ───────────────────────────────────────────────────────────────────
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    sendBtn.disabled = true;
+    input.disabled   = true;
+
+    try {
+      const fd = new FormData();
+      fd.append('message', text);
+      await fetch('/send_web', { method: 'POST', body: fd });
+      input.value = '';
+      autoResize();
+      await poll(); // immediate refresh
+      scrollToBottom(true);
+    } catch (e) {
+      console.error('Send error:', e);
+    } finally {
+      sendBtn.disabled = false;
+      input.disabled   = false;
+      input.focus();
+    }
+  }
+
+  // ── Input events ───────────────────────────────────────────────────────────
+  function autoResize() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  }
+
+  input.addEventListener('input', () => {
+    autoResize();
+    sendBtn.disabled = input.value.trim().length === 0;
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!sendBtn.disabled) sendMessage();
+    }
+  });
+
+  sendBtn.addEventListener('click', sendMessage);
+
+  // ── Unread badge click ─────────────────────────────────────────────────────
+  unreadBadge.addEventListener('click', () => {
+    scrollToBottom(true);
+    unreadBadge.classList.remove('visible');
+  });
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  poll();
+  pollInterval = setInterval(poll, 4000);
+  input.focus();
+</script>
+</body>
+</html>
