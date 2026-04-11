@@ -3,29 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Terminal Phone</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>Chat App</title>
+<script>
+  (function() {
+    var t = localStorage.getItem('chat-theme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
 <style>
+  /* ── Modern Light (default) ── */
   :root {
-    --bg:          #07090c;
-    --bg2:         #0c1016;
-    --bg3:         #111820;
-    --bg4:         #151f28;
-    --border:      #1a2633;
-    --border2:     #223040;
-    --accent:      #3de8c0;
-    --accent-dim:  rgba(61,232,192,0.12);
-    --accent-glow: rgba(61,232,192,0.2);
-    --modem:       #f0c040;
-    --modem-dim:   rgba(240,192,64,0.1);
-    --text:        #a8bfcc;
-    --text-bright: #ddeaf0;
-    --text-dim:    #3d5060;
-    --danger:      #ff4d6d;
-    --mono:        'IBM Plex Mono', monospace;
-    --sans:        'Syne', sans-serif;
-    --radius:      6px;
+    --bg:          #f0f2f5;
+    --bg2:         #ffffff;
+    --bg3:         #e4e6eb;
+    --border:      #d8dadf;
+    --border2:     #c4c9d4;
+    --accent:      #0084ff;
+    --accent-dim:  rgba(0,132,255,0.15);
+    --modem:       #00b09b;
+    --modem-dim:   rgba(0,176,155,0.13);
+    --text:        #3c4043;
+    --text-bright: #050505;
+    --text-dim:    #8a8d91;
+    --danger:      #e41e3f;
+    --font-base:   -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --radius:      12px;
+    --msg-radius:  18px;
+  }
+
+  /* ── Modern Dark ── */
+  [data-theme="modern-dark"] {
+    --bg:          #1e1f22;
+    --bg2:         #2b2d31;
+    --bg3:         #383a40;
+    --border:      #1e2023;
+    --border2:     #4e5058;
+    --accent:      #5865f2;
+    --accent-dim:  rgba(88,101,242,0.22);
+    --modem:       #3ba55d;
+    --modem-dim:   rgba(59,165,93,0.18);
+    --text:        #dcddde;
+    --text-bright: #ffffff;
+    --text-dim:    #72767d;
+    --danger:      #ed4245;
+    --font-base:   -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --radius:      12px;
+    --msg-radius:  18px;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,7 +58,8 @@
     overflow: hidden;
     background: var(--bg);
     color: var(--text);
-    font-family: var(--mono);
+    font-family: var(--font-base);
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   /* ═══════════════════════════════════════
@@ -58,7 +82,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
-    height: 52px;
+    height: 56px;
     background: var(--bg2);
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
@@ -71,7 +95,7 @@
     bottom: 0; left: 0; right: 0;
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    opacity: 0.3;
+    opacity: 0.25;
   }
 
   .topbar-left {
@@ -94,20 +118,19 @@
   }
 
   .topbar-title {
-    font-family: var(--sans);
-    font-size: 15px;
+    font-family: var(--font-base);
+    font-size: 16px;
     font-weight: 700;
     color: var(--text-bright);
-    letter-spacing: 0.3px;
+    letter-spacing: 0.2px;
   }
   .topbar-title span { color: var(--accent); }
 
   .topbar-user {
-    font-size: 11px;
+    font-size: 13px;
     color: var(--text-dim);
-    letter-spacing: 1px;
   }
-  .topbar-user strong { color: var(--accent); font-weight: 500; }
+  .topbar-user strong { color: var(--accent); font-weight: 600; }
 
   .topbar-right {
     display: flex;
@@ -115,19 +138,32 @@
     gap: 10px;
   }
 
+  .theme-select {
+    background: var(--bg3);
+    color: var(--text-bright);
+    border: 1px solid var(--border2);
+    padding: 6px 10px;
+    border-radius: var(--radius);
+    font-family: var(--font-base);
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .theme-select:hover { border-color: var(--accent); }
+
   .btn-icon {
     background: none;
     border: 1px solid var(--border2);
     color: var(--text-dim);
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 1.5px;
+    padding: 6px 14px;
+    border-radius: var(--radius);
+    font-family: var(--font-base);
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
     text-decoration: none;
     transition: all 0.15s;
-    text-transform: uppercase;
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -136,7 +172,7 @@
 
   {% if current_user.is_admin %}
   .btn-admin {
-    border-color: rgba(61,232,192,0.3);
+    border-color: rgba(88,101,242,0.4);
     color: var(--accent);
   }
   {% endif %}
@@ -149,37 +185,38 @@
     align-items: center;
     gap: 0;
     padding: 0 20px;
-    height: 36px;
+    height: 40px;
     background: var(--bg3);
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
   }
   .channel-tag {
-    font-size: 9px;
-    letter-spacing: 3px;
+    font-size: 11px;
+    font-weight: 600;
     color: var(--text-dim);
     text-transform: uppercase;
+    letter-spacing: 0.5px;
     padding-right: 14px;
     border-right: 1px solid var(--border);
     margin-right: 14px;
   }
   .channel-name {
-    font-size: 11px;
-    color: var(--accent);
-    letter-spacing: 1px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-bright);
   }
-  .channel-name::before { content: '# '; opacity: 0.5; }
+  .channel-name::before { content: '# '; color: var(--text-dim); }
 
   .unread-badge {
     margin-left: auto;
-    background: var(--modem-dim);
-    border: 1px solid rgba(240,192,64,0.2);
-    color: var(--modem);
-    font-size: 9px;
-    padding: 2px 8px;
-    border-radius: 2px;
-    letter-spacing: 1px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
     display: none;
+    cursor: pointer;
   }
   .unread-badge.visible { display: inline-block; }
 
@@ -206,8 +243,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    margin: 16px 0 10px;
-    opacity: 0.5;
+    margin: 20px 0 12px;
   }
   .date-divider::before, .date-divider::after {
     content: '';
@@ -216,10 +252,9 @@
     background: var(--border);
   }
   .date-divider span {
-    font-size: 9px;
-    letter-spacing: 3px;
+    font-size: 11px;
+    font-weight: 600;
     color: var(--text-dim);
-    text-transform: uppercase;
     white-space: nowrap;
   }
 
@@ -247,42 +282,38 @@
   }
 
   .msg-sender {
-    font-size: 9px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+    font-size: 12px;
     font-weight: 600;
   }
   .msg.web  .msg-sender { color: var(--accent); }
   .msg.modem .msg-sender { color: var(--modem); }
 
   .msg-time {
-    font-size: 9px;
+    font-size: 11px;
     color: var(--text-dim);
-    letter-spacing: 0.5px;
   }
 
   .msg-bubble {
-    padding: 10px 14px;
-    border-radius: var(--radius);
-    font-size: 13px;
-    line-height: 1.55;
-    letter-spacing: 0.2px;
+    padding: 10px 16px;
+    border-radius: var(--msg-radius);
+    font-size: 14px;
+    line-height: 1.5;
     word-break: break-word;
     position: relative;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
   }
 
   .msg.web .msg-bubble {
-    background: var(--accent-dim);
-    border: 1px solid rgba(61,232,192,0.18);
-    color: var(--text-bright);
-    border-bottom-right-radius: 2px;
+    background: var(--accent);
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
   }
 
   .msg.modem .msg-bubble {
-    background: var(--modem-dim);
-    border: 1px solid rgba(240,192,64,0.18);
-    color: #f5dfa0;
-    border-bottom-left-radius: 2px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text-bright);
+    border-bottom-left-radius: 4px;
   }
 
   /* Consecutive messages — tighten gap */
@@ -299,15 +330,14 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    opacity: 0.3;
+    opacity: 0.5;
     pointer-events: none;
     padding-bottom: 40px;
   }
-  .empty-state .icon { font-size: 32px; }
+  .empty-state .icon { font-size: 36px; }
   .empty-state p {
-    font-size: 11px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
+    font-size: 14px;
+    font-weight: 600;
     color: var(--text-dim);
   }
 
@@ -328,9 +358,8 @@
   }
   .typing-indicator.show { display: flex; }
   .typing-indicator span {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--text-dim);
-    letter-spacing: 1px;
     margin-right: 4px;
   }
   .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--text-dim); animation: bounce 1.2s infinite; }
@@ -357,13 +386,13 @@
     gap: 10px;
     background: var(--bg3);
     border: 1px solid var(--border2);
-    border-radius: var(--radius);
-    padding: 8px 10px 8px 16px;
+    border-radius: 24px;
+    padding: 8px 10px 8px 20px;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
   .input-row:focus-within {
-    border-color: rgba(61,232,192,0.35);
-    box-shadow: 0 0 0 3px rgba(61,232,192,0.07);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,132,255,0.1);
   }
 
   #msg-input {
@@ -372,9 +401,8 @@
     border: none;
     outline: none;
     color: var(--text-bright);
-    font-family: var(--mono);
-    font-size: 13px;
-    letter-spacing: 0.3px;
+    font-family: var(--font-base);
+    font-size: 14px;
     resize: none;
     max-height: 120px;
     line-height: 1.5;
@@ -388,7 +416,7 @@
   .send-btn {
     background: var(--accent);
     border: none;
-    border-radius: 4px;
+    border-radius: 50%;
     width: 36px;
     height: 36px;
     cursor: pointer;
@@ -397,38 +425,18 @@
     justify-content: center;
     flex-shrink: 0;
     transition: background 0.15s, transform 0.1s;
-    color: #040e0b;
+    color: #fff;
   }
-  .send-btn:hover { background: #5cf5d5; }
+  .send-btn:hover { filter: brightness(1.1); }
   .send-btn:active { transform: scale(0.94); }
   .send-btn:disabled { background: var(--border2); color: var(--text-dim); cursor: not-allowed; }
   .send-btn svg { width: 16px; height: 16px; }
 
   .input-hint {
-    font-size: 9px;
+    font-size: 11px;
     color: var(--text-dim);
-    letter-spacing: 1.5px;
     text-align: center;
     margin-top: 8px;
-    text-transform: uppercase;
-  }
-
-  /* ═══════════════════════════════════════
-     SCAN LINE EFFECT (subtle CRT)
-  ═══════════════════════════════════════ */
-  .messages-area::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.03) 2px,
-      rgba(0,0,0,0.03) 4px
-    );
-    pointer-events: none;
-    z-index: 10;
   }
 
   /* ═══════════════════════════════════════
@@ -450,7 +458,7 @@
   <header class="topbar">
     <div class="topbar-left">
       <div class="status-dot" id="status-dot"></div>
-      <div class="topbar-title">Terminal<span>Phone</span></div>
+      <div class="topbar-title">Chat<span>App</span></div>
     </div>
     <div class="topbar-user">
       <strong>{{ current_user.username }}</strong>
@@ -459,24 +467,28 @@
       {% endif %}
     </div>
     <div class="topbar-right">
+      <select id="theme-selector" class="theme-select" aria-label="Select theme">
+        <option value="modern-light">☀ Light</option>
+        <option value="modern-dark">🌙 Dark</option>
+      </select>
       {% if current_user.is_admin %}
-      <a href="{{ url_for('admin.dashboard') }}" class="btn-icon btn-admin">⬡ Admin</a>
+      <a href="{{ url_for('admin.dashboard') }}" class="btn-icon btn-admin">Admin</a>
       {% endif %}
-      <a href="{{ url_for('auth.logout') }}" class="btn-icon">⏻ Exit</a>
+      <a href="{{ url_for('auth.logout') }}" class="btn-icon">Sign Out</a>
     </div>
   </header>
 
   <!-- CHANNEL BAR -->
   <div class="channel-bar">
-    <div class="channel-tag">Channel</div>
+    <div class="channel-tag">Chat</div>
     <div class="channel-name">sms-bridge</div>
-    <div class="unread-badge" id="unread-badge">● NEW</div>
+    <div class="unread-badge" id="unread-badge">New Messages</div>
   </div>
 
   <!-- MESSAGES -->
   <div class="messages-area" id="messages-area">
     <div class="empty-state" id="empty-state">
-      <div class="icon">◎</div>
+      <div class="icon">💬</div>
       <p>No messages yet</p>
     </div>
   </div>
@@ -484,7 +496,7 @@
   <!-- TYPING ROW -->
   <div class="typing-row">
     <div class="typing-indicator" id="typing-indicator">
-      <span>modem</span>
+      <span>typing</span>
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>
@@ -508,7 +520,19 @@
 </div>
 
 <script>
-  // ── State ──────────────────────────────────────────────────────────────────
+  // ── Theme Switcher ────────────────────────────────────────────────────────
+  const themeSelector = document.getElementById('theme-selector');
+  const savedTheme = localStorage.getItem('chat-theme') || 'modern-light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  themeSelector.value = savedTheme;
+
+  themeSelector.addEventListener('change', (e) => {
+    const theme = e.target.value;
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('chat-theme', theme);
+  });
+
+  // ── State ───────────────────────────────────────────────────────────
   let lastMsgCount   = 0;
   let lastMsgId      = null;   // track newest rendered message
   let isAtBottom     = true;

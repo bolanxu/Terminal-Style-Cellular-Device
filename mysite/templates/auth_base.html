@@ -3,25 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{% block title %}Terminal Phone{% endblock %}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>{% block title %}Chat App{% endblock %}</title>
+<script>
+  (function() {
+    var t = localStorage.getItem('chat-theme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
 <style>
+  /* ── Modern Light (default) ── */
   :root {
-    --bg:        #080b0e;
-    --bg2:       #0d1117;
-    --bg3:       #131920;
-    --border:    #1c2a35;
-    --border2:   #243040;
-    --accent:    #3de8c0;
-    --accent2:   #1ab89a;
-    --glow:      rgba(61,232,192,0.15);
-    --text:      #b8cad6;
-    --text-dim:  #4d6070;
-    --white:     #e8f0f5;
-    --mono:      'IBM Plex Mono', monospace;
-    --sans:      'Syne', sans-serif;
-    --danger:    #ff4d6d;
+    --bg:        #f0f2f5;
+    --bg2:       #ffffff;
+    --bg3:       #e4e6eb;
+    --border:    #d8dadf;
+    --border2:   #c4c9d4;
+    --accent:    #0084ff;
+    --accent2:   #006fd6;
+    --glow:      rgba(0,132,255,0.12);
+    --text:      #3c4043;
+    --text-dim:  #8a8d91;
+    --white:     #050505;
+    --danger:    #e41e3f;
+    --font-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  /* ── Modern Dark ── */
+  [data-theme="modern-dark"] {
+    --bg:        #1e1f22;
+    --bg2:       #2b2d31;
+    --bg3:       #383a40;
+    --border:    #1e2023;
+    --border2:   #4e5058;
+    --accent:    #5865f2;
+    --accent2:   #4752c4;
+    --glow:      rgba(88,101,242,0.15);
+    --text:      #dcddde;
+    --text-dim:  #72767d;
+    --white:     #ffffff;
+    --danger:    #ed4245;
+    --font-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,38 +50,12 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: var(--mono);
+    font-family: var(--font-base);
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    overflow: hidden;
-  }
-
-  /* Grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(var(--border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border) 1px, transparent 1px);
-    background-size: 40px 40px;
-    opacity: 0.35;
-    pointer-events: none;
-  }
-
-  /* Corner glow */
-  body::after {
-    content: '';
-    position: fixed;
-    bottom: -200px;
-    right: -200px;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(61,232,192,0.06) 0%, transparent 70%);
-    pointer-events: none;
   }
 
   .auth-wrap {
@@ -69,27 +64,27 @@
     width: 100%;
     max-width: 420px;
     padding: 20px;
-    animation: fadeUp 0.4s ease both;
+    animation: fadeUp 0.35s ease both;
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
+    from { opacity: 0; transform: translateY(14px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 
   .auth-logo {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 28px;
   }
   .auth-logo .tag {
-    font-size: 10px;
-    letter-spacing: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
     color: var(--accent);
-    text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
   .auth-logo h1 {
-    font-family: var(--sans);
+    font-family: var(--font-base);
     font-size: 28px;
     font-weight: 800;
     color: var(--white);
@@ -100,33 +95,31 @@
   .auth-card {
     background: var(--bg2);
     border: 1px solid var(--border2);
-    border-radius: 6px;
+    border-radius: 16px;
     padding: 32px;
-    box-shadow: 0 0 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(61,232,192,0.05);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.1);
   }
 
   .auth-card h2 {
-    font-family: var(--sans);
-    font-size: 18px;
+    font-family: var(--font-base);
+    font-size: 20px;
     font-weight: 700;
     color: var(--white);
     margin-bottom: 6px;
   }
   .auth-card .subtitle {
-    font-size: 11px;
+    font-size: 13px;
     color: var(--text-dim);
     margin-bottom: 24px;
-    letter-spacing: 0.5px;
   }
 
   .form-group { margin-bottom: 16px; }
   label {
     display: block;
-    font-size: 9px;
-    letter-spacing: 3px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
   }
 
   input[type=text],
@@ -137,12 +130,11 @@
     border: 1px solid var(--border2);
     color: var(--white);
     padding: 11px 14px;
-    border-radius: 4px;
-    font-family: var(--mono);
-    font-size: 13px;
+    border-radius: 10px;
+    font-family: var(--font-base);
+    font-size: 14px;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
-    letter-spacing: 0.5px;
   }
   input:focus {
     border-color: var(--accent2);
@@ -153,45 +145,42 @@
   .btn-submit {
     width: 100%;
     background: var(--accent);
-    color: #050d0b;
+    color: #ffffff;
     border: none;
     padding: 12px;
-    border-radius: 4px;
-    font-family: var(--sans);
-    font-size: 14px;
+    border-radius: 10px;
+    font-family: var(--font-base);
+    font-size: 15px;
     font-weight: 700;
-    letter-spacing: 1px;
     cursor: pointer;
     margin-top: 8px;
     transition: background 0.2s, transform 0.1s;
-    text-transform: uppercase;
   }
-  .btn-submit:hover { background: #5cf5d5; }
+  .btn-submit:hover { background: var(--accent2); }
   .btn-submit:active { transform: scale(0.99); }
 
   .auth-footer {
     text-align: center;
     margin-top: 20px;
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-dim);
   }
   .auth-footer a {
     color: var(--accent);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
   }
-  .auth-footer a:hover { color: #5cf5d5; }
+  .auth-footer a:hover { text-decoration: underline; }
 
   .flash-msg {
-    background: rgba(255,77,109,0.1);
-    border: 1px solid rgba(255,77,109,0.3);
+    background: rgba(228,30,63,0.08);
+    border: 1px solid rgba(228,30,63,0.25);
     border-left: 3px solid var(--danger);
-    color: #ff8fa3;
+    color: var(--danger);
     padding: 10px 14px;
-    border-radius: 3px;
-    font-size: 12px;
+    border-radius: 8px;
+    font-size: 13px;
     margin-bottom: 18px;
-    letter-spacing: 0.3px;
   }
 
   .divider {
@@ -207,28 +196,64 @@
     transform: translate(-50%, -50%);
     background: var(--bg2);
     padding: 0 10px;
-    font-size: 10px;
+    font-size: 12px;
     color: var(--text-dim);
-    letter-spacing: 2px;
   }
+
+  /* Theme toggle in corner */
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-family: var(--font-base);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
+
+<button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">🌙 Dark</button>
+
 <div class="auth-wrap">
   <div class="auth-logo">
-    <div class="tag">// system</div>
-    <h1>Terminal<span>Phone</span></h1>
+    <div class="tag">Chat App</div>
+    <h1>Welcome<span>.</span></h1>
   </div>
 
   {% with messages = get_flashed_messages() %}
     {% if messages %}
       {% for msg in messages %}
-        <div class="flash-msg">⚠ {{ msg }}</div>
+        <div class="flash-msg">{{ msg }}</div>
       {% endfor %}
     {% endif %}
   {% endwith %}
 
   {% block content %}{% endblock %}
 </div>
+
+<script>
+  const toggle = document.getElementById('theme-toggle');
+  const saved = localStorage.getItem('chat-theme') || 'modern-light';
+  document.documentElement.setAttribute('data-theme', saved);
+  toggle.textContent = saved === 'modern-dark' ? '☀ Light' : '🌙 Dark';
+
+  toggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'modern-dark' ? 'modern-light' : 'modern-dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('chat-theme', next);
+    toggle.textContent = next === 'modern-dark' ? '☀ Light' : '🌙 Dark';
+  });
+</script>
 </body>
 </html>
