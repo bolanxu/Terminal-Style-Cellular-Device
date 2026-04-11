@@ -1,21 +1,21 @@
 {% extends "auth_base.html" %}
-{% block title %}Login — Terminal Phone{% endblock %}
+{% block title %}Sign In — Chat App{% endblock %}
 
 {% block content %}
 <div class="auth-card">
-  <h2>Sign in</h2>
-  <div class="subtitle">// enter credentials to access your terminal</div>
+  <h2>Sign In</h2>
+  <div class="subtitle">Enter your credentials to continue</div>
 
   <form method="POST">
     <div class="form-group">
       <label>Username</label>
-      <input type="text" name="username" placeholder="your_handle" autocomplete="username" required autofocus>
+      <input type="text" name="username" placeholder="Username" autocomplete="username" required autofocus>
     </div>
     <div class="form-group">
       <label>Password</label>
       <input type="password" name="password" placeholder="••••••••••" autocomplete="current-password" required>
     </div>
-    <button type="submit" class="btn-submit">Connect →</button>
+    <button type="submit" class="btn-submit">Sign In</button>
   </form>
 
   <div class="divider"><span>OR</span></div>
