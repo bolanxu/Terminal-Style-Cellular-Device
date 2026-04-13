@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Chat App</title>
+<title>Bolan Chat</title>
 <script>
   (function() {
     var t = localStorage.getItem('chat-theme');
@@ -22,10 +22,11 @@
     --accent-dim:  rgba(0,132,255,0.15);
     --modem:       #00b09b;
     --modem-dim:   rgba(0,176,155,0.13);
+    --sms:         #8b5cf6;
+    --sms-dim:     rgba(139,92,246,0.13);
     --text:        #3c4043;
     --text-bright: #050505;
     --text-dim:    #8a8d91;
-    --danger:      #e41e3f;
     --font-base:   -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --radius:      12px;
     --msg-radius:  18px;
@@ -42,10 +43,11 @@
     --accent-dim:  rgba(88,101,242,0.22);
     --modem:       #3ba55d;
     --modem-dim:   rgba(59,165,93,0.18);
+    --sms:         #a78bfa;
+    --sms-dim:     rgba(167,139,250,0.18);
     --text:        #dcddde;
     --text-bright: #ffffff;
     --text-dim:    #72767d;
-    --danger:      #ed4245;
     --font-base:   -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --radius:      12px;
     --msg-radius:  18px;
@@ -62,9 +64,6 @@
     transition: background-color 0.25s ease, color 0.25s ease;
   }
 
-  /* ═══════════════════════════════════════
-     LAYOUT
-  ═══════════════════════════════════════ */
   .shell {
     height: 100vh;
     display: flex;
@@ -74,9 +73,7 @@
     position: relative;
   }
 
-  /* ═══════════════════════════════════════
-     TOPBAR
-  ═══════════════════════════════════════ */
+  /* ── TOPBAR ── */
   .topbar {
     display: flex;
     align-items: center;
@@ -88,7 +85,6 @@
     flex-shrink: 0;
     position: relative;
   }
-
   .topbar::after {
     content: '';
     position: absolute;
@@ -97,13 +93,7 @@
     background: linear-gradient(90deg, transparent, var(--accent), transparent);
     opacity: 0.25;
   }
-
-  .topbar-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
   .status-dot {
     width: 8px; height: 8px;
     border-radius: 50%;
@@ -116,27 +106,11 @@
     0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--accent); }
     50%       { opacity: 0.5; box-shadow: 0 0 2px var(--accent); }
   }
-
-  .topbar-title {
-    font-family: var(--font-base);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-bright);
-    letter-spacing: 0.2px;
-  }
+  .topbar-title { font-size: 16px; font-weight: 700; color: var(--text-bright); letter-spacing: 0.2px; }
   .topbar-title span { color: var(--accent); }
-
-  .topbar-user {
-    font-size: 13px;
-    color: var(--text-dim);
-  }
+  .topbar-user { font-size: 13px; color: var(--text-dim); }
   .topbar-user strong { color: var(--accent); font-weight: 600; }
-
-  .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
 
   .theme-select {
     background: var(--bg3);
@@ -169,26 +143,20 @@
     gap: 5px;
   }
   .btn-icon:hover { border-color: var(--accent); color: var(--accent); }
-
   {% if current_user.is_admin %}
-  .btn-admin {
-    border-color: var(--accent-dim);
-    color: var(--accent);
-  }
+  .btn-admin { border-color: var(--accent-dim); color: var(--accent); }
   {% endif %}
 
-  /* ═══════════════════════════════════════
-     CHANNEL BAR
-  ═══════════════════════════════════════ */
+  /* ── CHANNEL BAR ── */
   .channel-bar {
     display: flex;
     align-items: center;
-    gap: 0;
     padding: 0 20px;
     height: 40px;
     background: var(--bg3);
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
+    gap: 14px;
   }
   .channel-tag {
     font-size: 11px;
@@ -198,17 +166,16 @@
     letter-spacing: 0.5px;
     padding-right: 14px;
     border-right: 1px solid var(--border);
-    margin-right: 14px;
+    white-space: nowrap;
   }
   .channel-name {
     font-size: 14px;
     font-weight: 600;
     color: var(--text-bright);
+    flex: 1;
   }
   .channel-name::before { content: '# '; color: var(--text-dim); }
-
   .unread-badge {
-    margin-left: auto;
     background: var(--accent);
     color: #fff;
     font-size: 11px;
@@ -220,9 +187,34 @@
   }
   .unread-badge.visible { display: inline-block; }
 
-  /* ═══════════════════════════════════════
-     MESSAGE AREA
-  ═══════════════════════════════════════ */
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    height: 32px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .legend-dot.web   { background: var(--accent); }
+  .legend-dot.sms   { background: var(--sms); }
+  .legend-dot.modem { background: var(--modem); }
+
+  /* ── MESSAGES ── */
   .messages-area {
     flex: 1;
     overflow-y: auto;
@@ -232,13 +224,10 @@
     gap: 2px;
     scroll-behavior: smooth;
   }
-
-  /* Custom scrollbar */
   .messages-area::-webkit-scrollbar { width: 4px; }
   .messages-area::-webkit-scrollbar-track { background: transparent; }
   .messages-area::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
-  /* Date divider */
   .date-divider {
     display: flex;
     align-items: center;
@@ -258,7 +247,6 @@
     white-space: nowrap;
   }
 
-  /* Message bubble */
   .msg {
     display: flex;
     flex-direction: column;
@@ -270,8 +258,9 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  .msg.web  { align-self: flex-end; align-items: flex-end; }
-  .msg.modem { align-self: flex-start; align-items: flex-start; }
+  /* Them (web + sms) = right. You (modem) = left. */
+  .msg.right { align-self: flex-end;   align-items: flex-end; }
+  .msg.left  { align-self: flex-start; align-items: flex-start; }
 
   .msg-meta {
     display: flex;
@@ -280,18 +269,20 @@
     margin-bottom: 4px;
     padding: 0 4px;
   }
+  .msg-sender { font-size: 12px; font-weight: 600; }
+  .msg.right .msg-sender { color: var(--accent); }
+  .msg.left  .msg-sender { color: var(--modem); }
+  .msg-time  { font-size: 11px; color: var(--text-dim); }
 
-  .msg-sender {
-    font-size: 12px;
+  /* Small tag to show if message came via SMS vs web */
+  .via-tag {
+    font-size: 10px;
     font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 6px;
   }
-  .msg.web  .msg-sender { color: var(--accent); }
-  .msg.modem .msg-sender { color: var(--modem); }
-
-  .msg-time {
-    font-size: 11px;
-    color: var(--text-dim);
-  }
+  .via-tag.web { background: var(--accent-dim); color: var(--accent); }
+  .via-tag.sms { background: var(--sms-dim);    color: var(--sms); }
 
   .msg-bubble {
     padding: 10px 16px;
@@ -299,30 +290,31 @@
     font-size: 14px;
     line-height: 1.5;
     word-break: break-word;
-    position: relative;
     box-shadow: 0 1px 2px rgba(0,0,0,0.08);
   }
 
-  .msg.web .msg-bubble {
+  /* Right (them) — WEB source: blue, SMS source: purple */
+  .msg.right.src-web .msg-bubble {
     background: var(--accent);
     color: #ffffff;
     border-bottom-right-radius: 4px;
   }
+  .msg.right.src-sms .msg-bubble {
+    background: var(--sms);
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+  }
 
-  .msg.modem .msg-bubble {
+  /* Left (you / modem) */
+  .msg.left .msg-bubble {
     background: var(--bg2);
     border: 1px solid var(--border);
     color: var(--text-bright);
     border-bottom-left-radius: 4px;
   }
 
-  /* Consecutive messages — tighten gap */
-  .msg + .msg.web,
-  .msg + .msg.modem {
-    margin-top: 2px;
-  }
+  .msg + .msg { margin-top: 2px; }
 
-  /* Empty state */
   .empty-state {
     flex: 1;
     display: flex;
@@ -335,33 +327,13 @@
     padding-bottom: 40px;
   }
   .empty-state .icon { font-size: 36px; }
-  .empty-state p {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-dim);
-  }
+  .empty-state p { font-size: 14px; font-weight: 600; color: var(--text-dim); }
 
-  /* ═══════════════════════════════════════
-     TYPING INDICATOR
-  ═══════════════════════════════════════ */
-  .typing-row {
-    height: 24px;
-    padding: 0 20px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-  }
-  .typing-indicator {
-    display: none;
-    align-items: center;
-    gap: 4px;
-  }
+  /* ── TYPING ── */
+  .typing-row { height: 24px; padding: 0 20px; flex-shrink: 0; display: flex; align-items: center; }
+  .typing-indicator { display: none; align-items: center; gap: 4px; }
   .typing-indicator.show { display: flex; }
-  .typing-indicator span {
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-right: 4px;
-  }
+  .typing-indicator span { font-size: 12px; color: var(--text-dim); margin-right: 4px; }
   .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--text-dim); animation: bounce 1.2s infinite; }
   .dot:nth-child(3) { animation-delay: 0.15s; }
   .dot:nth-child(4) { animation-delay: 0.3s; }
@@ -370,16 +342,13 @@
     30%           { transform: translateY(-4px); }
   }
 
-  /* ═══════════════════════════════════════
-     INPUT BAR
-  ═══════════════════════════════════════ */
+  /* ── INPUT BAR ── */
   .input-bar {
     padding: 12px 16px 16px;
     background: var(--bg2);
     border-top: 1px solid var(--border);
     flex-shrink: 0;
   }
-
   .input-row {
     display: flex;
     align-items: flex-end;
@@ -394,7 +363,6 @@
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-dim);
   }
-
   #msg-input {
     flex: 1;
     background: none;
@@ -417,8 +385,7 @@
     background: var(--accent);
     border: none;
     border-radius: 50%;
-    width: 36px;
-    height: 36px;
+    width: 36px; height: 36px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -431,23 +398,14 @@
   .send-btn:active { transform: scale(0.94); }
   .send-btn:disabled { background: var(--border2); color: var(--text-dim); cursor: not-allowed; }
   .send-btn svg { width: 16px; height: 16px; }
+  .input-hint { font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 8px; }
 
-  .input-hint {
-    font-size: 11px;
-    color: var(--text-dim);
-    text-align: center;
-    margin-top: 8px;
-  }
-
-  /* ═══════════════════════════════════════
-     RESPONSIVE
-  ═══════════════════════════════════════ */
   @media (max-width: 600px) {
     .topbar-user { display: none; }
     .msg { max-width: 90%; }
-    .channel-bar { padding: 0 14px; }
     .messages-area { padding: 14px 14px 8px; }
     .input-bar { padding: 10px 12px 14px; }
+    .legend { gap: 10px; padding: 0 14px; }
   }
 </style>
 </head>
@@ -457,8 +415,8 @@
   <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-left">
-      <div class="status-dot" id="status-dot"></div>
-      <div class="topbar-title">Chat<span>App</span></div>
+      <div class="status-dot"></div>
+      <div class="topbar-title">Bolan<span>Chat</span></div>
     </div>
     <div class="topbar-user">
       <strong>{{ current_user.username }}</strong>
@@ -482,7 +440,23 @@
   <div class="channel-bar">
     <div class="channel-tag">Chat</div>
     <div class="channel-name">sms-bridge</div>
-    <div class="unread-badge" id="unread-badge">New Messages</div>
+    <div class="unread-badge" id="unread-badge">↓ New</div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot web"></div>
+      <span>Web message (them)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot sms"></div>
+      <span>SMS (them)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot modem"></div>
+      <span>Modem / you</span>
+    </div>
   </div>
 
   <!-- MESSAGES -->
@@ -520,104 +494,109 @@
 </div>
 
 <script>
-  // ── Theme Switcher ────────────────────────────────────────────────────────
+  // ── Theme ─────────────────────────────────────────────────────────────────
   const themeSelector = document.getElementById('theme-selector');
-  const savedTheme = localStorage.getItem('chat-theme') || 'modern-light';
+  const savedTheme    = localStorage.getItem('chat-theme') || 'modern-light';
   document.documentElement.setAttribute('data-theme', savedTheme);
   themeSelector.value = savedTheme;
-
   themeSelector.addEventListener('change', (e) => {
-    const theme = e.target.value;
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('chat-theme', theme);
+    document.documentElement.setAttribute('data-theme', e.target.value);
+    localStorage.setItem('chat-theme', e.target.value);
   });
 
-  // ── State ───────────────────────────────────────────────────────────
-  let lastMsgCount   = 0;
-  let lastMsgId      = null;   // track newest rendered message
-  let isAtBottom     = true;
-  let pollInterval   = null;
-  const area         = document.getElementById('messages-area');
-  const input        = document.getElementById('msg-input');
-  const sendBtn      = document.getElementById('send-btn');
-  const emptyState   = document.getElementById('empty-state');
-  const unreadBadge  = document.getElementById('unread-badge');
+  // ── State ─────────────────────────────────────────────────────────────────
+  let lastMsgCount = 0;
+  let isAtBottom   = true;
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  function formatTime(isoOrNull) {
-    if (!isoOrNull) return '';
+  const area        = document.getElementById('messages-area');
+  const input       = document.getElementById('msg-input');
+  const sendBtn     = document.getElementById('send-btn');
+  const emptyState  = document.getElementById('empty-state');
+  const unreadBadge = document.getElementById('unread-badge');
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function formatTime(iso) {
+    if (!iso) return '';
+    try { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+    catch { return ''; }
+  }
+  function formatDate(iso) {
+    if (!iso) return '';
     try {
-      const d = new Date(isoOrNull);
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const d = new Date(iso), now = new Date();
+      if (d.toDateString() === now.toDateString()) return 'Today';
+      const y = new Date(now); y.setDate(now.getDate() - 1);
+      if (d.toDateString() === y.toDateString()) return 'Yesterday';
+      return d.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
     } catch { return ''; }
   }
-
-  function formatDate(isoOrNull) {
-    if (!isoOrNull) return '';
-    try {
-      const d  = new Date(isoOrNull);
-      const now = new Date();
-      const isToday = d.toDateString() === now.toDateString();
-      const yesterday = new Date(now); yesterday.setDate(now.getDate()-1);
-      const isYesterday = d.toDateString() === yesterday.toDateString();
-      if (isToday)     return 'Today';
-      if (isYesterday) return 'Yesterday';
-      return d.toLocaleDateString([], { weekday:'long', month:'short', day:'numeric' });
-    } catch { return ''; }
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/\n/g,'<br>');
   }
-
   function scrollToBottom(force = false) {
-    if (force || isAtBottom) {
-      area.scrollTop = area.scrollHeight;
-    }
+    if (force || isAtBottom) area.scrollTop = area.scrollHeight;
   }
-
   area.addEventListener('scroll', () => {
     isAtBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 60;
-    if (isAtBottom) {
-      unreadBadge.classList.remove('visible');
-    }
+    if (isAtBottom) unreadBadge.classList.remove('visible');
   });
+  unreadBadge.addEventListener('click', () => { scrollToBottom(true); unreadBadge.classList.remove('visible'); });
 
-  // ── Render messages ────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
   function renderMessages(msgs) {
     if (!msgs || msgs.length === 0) {
       emptyState.style.display = 'flex';
       return;
     }
     emptyState.style.display = 'none';
-
-    // Build a set of existing rendered message keys (sender+content+time)
-    // For simplicity we re-render fully on change in count
     if (msgs.length === lastMsgCount) return;
-    lastMsgCount = msgs.length;
 
-    // Clear non-divider nodes and re-render
-    // (Messages are limited to 20 so this is fine)
+    const wasAtBottom = isAtBottom;
+    lastMsgCount = msgs.length;
     area.innerHTML = '';
 
-    let lastDateLabel = null;
-
-    msgs.forEach((msg, i) => {
-      const cls     = msg.sender === 'WEB' ? 'web' : 'modem';
-      const label   = msg.sender === 'WEB' ? 'You' : 'Modem';
-      const timeStr = formatTime(msg.timestamp);
+    let lastDate = null;
+    msgs.forEach(msg => {
       const dateStr = formatDate(msg.timestamp);
+      const timeStr = formatTime(msg.timestamp);
 
-      // Date divider
-      if (dateStr && dateStr !== lastDateLabel) {
-        lastDateLabel = dateStr;
+      if (dateStr && dateStr !== lastDate) {
+        lastDate = dateStr;
         const div = document.createElement('div');
         div.className = 'date-divider';
         div.innerHTML = `<span>${dateStr}</span>`;
         area.appendChild(div);
       }
 
+      // Determine side and source
+      // MODEM = you = left. WEB and SMS = them = right.
+      const isModem = msg.sender === 'MODEM';
+      const side    = isModem ? 'left' : 'right';
+      const srcCls  = msg.sender === 'SMS' ? 'src-sms' : 'src-web';
+
+      // Sender label
+      let senderLabel;
+      if (isModem) {
+        senderLabel = 'You (Modem)';
+      } else if (msg.sender === 'SMS') {
+        senderLabel = msg.contact_name || msg.from_number || 'SMS';
+      } else {
+        senderLabel = '{{ current_user.username }}';
+      }
+
+      // Via tag
+      const viaTag = !isModem
+        ? `<span class="via-tag ${msg.sender === 'SMS' ? 'sms' : 'web'}">${msg.sender === 'SMS' ? 'SMS' : 'Web'}</span>`
+        : '';
+
       const wrap = document.createElement('div');
-      wrap.className = `msg ${cls}`;
+      wrap.className = `msg ${side} ${isModem ? '' : srcCls}`;
       wrap.innerHTML = `
         <div class="msg-meta">
-          <span class="msg-sender">${label}</span>
+          <span class="msg-sender">${escHtml(senderLabel)}</span>
+          ${viaTag}
           ${timeStr ? `<span class="msg-time">${timeStr}</span>` : ''}
         </div>
         <div class="msg-bubble">${escHtml(msg.content)}</div>
@@ -625,89 +604,64 @@
       area.appendChild(wrap);
     });
 
-    scrollToBottom(lastMsgCount === msgs.length ? false : true);
+    scrollToBottom(!wasAtBottom ? false : true);
 
-    // If user scrolled up and new modem message arrived, show unread badge
-    const lastMsg = msgs[msgs.length - 1];
-    if (!isAtBottom && lastMsg && lastMsg.sender === 'MODEM') {
+    const last = msgs[msgs.length - 1];
+    if (!isAtBottom && last && last.sender !== 'WEB') {
       unreadBadge.classList.add('visible');
     }
   }
 
-  function escHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/\n/g, '<br>');
-  }
-
-  // ── Poll ───────────────────────────────────────────────────────────────────
+  // ── Poll ──────────────────────────────────────────────────────────────────
   async function poll() {
     try {
       const res  = await fetch('/messages');
       const msgs = await res.json();
       renderMessages(msgs);
-    } catch (e) {
-      console.warn('Poll error:', e);
-    }
+    } catch(e) { console.warn('Poll error:', e); }
   }
 
-  // ── Send ───────────────────────────────────────────────────────────────────
+  // ── Send ──────────────────────────────────────────────────────────────────
   async function sendMessage() {
     const text = input.value.trim();
     if (!text) return;
-
     sendBtn.disabled = true;
     input.disabled   = true;
-
     try {
       const fd = new FormData();
       fd.append('message', text);
       await fetch('/send_web', { method: 'POST', body: fd });
       input.value = '';
       autoResize();
-      await poll(); // immediate refresh
+      await poll();
       scrollToBottom(true);
-    } catch (e) {
-      console.error('Send error:', e);
-    } finally {
+    } catch(e) { console.error('Send error:', e); }
+    finally {
       sendBtn.disabled = false;
       input.disabled   = false;
       input.focus();
     }
   }
 
-  // ── Input events ───────────────────────────────────────────────────────────
   function autoResize() {
     input.style.height = 'auto';
     input.style.height = Math.min(input.scrollHeight, 120) + 'px';
   }
-
   input.addEventListener('input', () => {
     autoResize();
     sendBtn.disabled = input.value.trim().length === 0;
   });
-
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (!sendBtn.disabled) sendMessage();
     }
   });
-
   sendBtn.addEventListener('click', sendMessage);
 
-  // ── Unread badge click ─────────────────────────────────────────────────────
-  unreadBadge.addEventListener('click', () => {
-    scrollToBottom(true);
-    unreadBadge.classList.remove('visible');
-  });
-
-  // ── Init ───────────────────────────────────────────────────────────────────
+  // ── Init ──────────────────────────────────────────────────────────────────
   poll();
-  pollInterval = setInterval(poll, 4000);
+  setInterval(poll, 4000);
   input.focus();
 </script>
 </body>

@@ -12,6 +12,14 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'chat.db')
 app.config['DB_PATH'] = DB_PATH
 
+# ── SignalWire config — set these in your WSGI file via os.environ ────────────
+# SW_SPACE_URL    = yourspace.signalwire.com
+# SW_PROJECT_ID   = your-project-id
+# SW_AUTH_TOKEN   = your-auth-token
+# SW_FROM_NUMBER  = +1XXXXXXXXXX
+for key in ('SW_SPACE_URL', 'SW_PROJECT_ID', 'SW_AUTH_TOKEN', 'SW_FROM_NUMBER'):
+    app.config[key] = os.environ.get(key, '')
+
 # --- LOGIN MANAGER ---
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
@@ -30,11 +38,13 @@ from routes.auth import auth_bp
 from routes.chat import chat_bp
 from routes.arduino import arduino_bp
 from routes.admin import admin_bp
+from routes.signalwire import signalwire_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(chat_bp)
 app.register_blueprint(arduino_bp)
 app.register_blueprint(admin_bp, url_prefix='/admin')
+app.register_blueprint(signalwire_bp)
 
 # --- DB INIT ---
 from db import init_db

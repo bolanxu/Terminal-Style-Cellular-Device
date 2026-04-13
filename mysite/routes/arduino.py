@@ -12,11 +12,16 @@ def _db():
 
 @arduino_bp.route('/<username>/post_from_arduino', methods=['POST'])
 def post_from_arduino(username):
+    """
+    ESP8266 posts a message here.
+    Stores it as sender='MODEM', then auto-sends SMS via SignalWire
+    if the target user has a phone number on their account.
+    """
     msg = request.get_data(as_text=True).strip()
 
     with _db() as conn:
         user = conn.execute(
-            "SELECT id FROM users WHERE username = ?", (username.lower(),)
+            "SELECT id, phone FROM users WHERE username = ?", (username.lower(),)
         ).fetchone()
 
         if user and msg:
@@ -25,6 +30,12 @@ def post_from_arduino(username):
                 (user['id'], 'MODEM', msg, datetime.datetime.now().isoformat())
             )
             conn.commit()
+
+            # Auto-forward to the user's real phone if they have one
+            if user['phone']:
+                from routes.signalwire import send_sms
+                send_sms(user['phone'], msg)
+
             resp = make_response("OK", 200)
             resp.headers['Content-Type'] = 'text/plain'
             resp.headers['Connection'] = 'close'
@@ -35,13 +46,18 @@ def post_from_arduino(username):
 
 @arduino_bp.route('/get_for_arduino')
 def get_for_arduino():
+    """
+    ESP8266 polls here for pending messages.
+    Returns WEB messages (typed on the website) AND SMS_QUEUE messages
+    (inbound SMS from named contacts, pre-formatted as [NAME]: body).
+    """
     with _db() as conn:
         c = conn.cursor()
         c.execute("""
             SELECT m.content, m.id, u.username
             FROM messages m
             JOIN users u ON m.user_id = u.id
-            WHERE m.sender = 'WEB' AND m.read = 0
+            WHERE m.sender IN ('WEB', 'SMS_QUEUE') AND m.read = 0
             ORDER BY m.id ASC
         """)
         rows = c.fetchall()
@@ -49,7 +65,12 @@ def get_for_arduino():
         if rows:
             output_list, ids_to_mark = [], []
             for row in rows:
-                output_list.append(f"[{row['username'].upper()}]: {row['content']}")
+                # SMS_QUEUE messages are already formatted as [NAME]: body
+                # WEB messages need the username prefix
+                if row['content'].startswith('['):
+                    output_list.append(row['content'])
+                else:
+                    output_list.append(f"[{row['username'].upper()}]: {row['content']}")
                 ids_to_mark.append(row['id'])
 
             placeholders = ','.join(['?'] * len(ids_to_mark))
@@ -74,3 +95,17 @@ def get_phone(username):
         return resp
 
     return make_response("NOT_FOUND", 404)
+
+
+@arduino_bp.route('/get_contacts')
+def get_contacts():
+    with _db() as conn:
+        c = conn.cursor()
+        c.execute("SELECT username FROM users ORDER BY username ASC")
+        rows = c.fetchall()
+
+        if rows:
+            usernames = [row['username'].upper() for row in rows]
+            return "\n".join(usernames)
+
+    return ""

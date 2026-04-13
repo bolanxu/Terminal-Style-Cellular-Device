@@ -15,7 +15,6 @@ def _db():
 
 
 def admin_required(f):
-    """Decorator: must be logged in AND have is_admin=1."""
     @wraps(f)
     @login_required
     def decorated(*args, **kwargs):
@@ -26,41 +25,61 @@ def admin_required(f):
     return decorated
 
 
-# ── Dashboard ────────────────────────────────────────────────────────────────
+# ── Dashboard ─────────────────────────────────────────────────────────────────
 
 @admin_bp.route('/')
 @admin_required
 def dashboard():
     with _db() as conn:
         stats = {
-            'total_users':    conn.execute("SELECT COUNT(*) FROM users").fetchone()[0],
-            'total_messages': conn.execute("SELECT COUNT(*) FROM messages").fetchone()[0],
-            'web_messages':   conn.execute("SELECT COUNT(*) FROM messages WHERE sender='WEB'").fetchone()[0],
-            'modem_messages': conn.execute("SELECT COUNT(*) FROM messages WHERE sender='MODEM'").fetchone()[0],
-            'unread':         conn.execute("SELECT COUNT(*) FROM messages WHERE read=0").fetchone()[0],
+            'total_users':       conn.execute("SELECT COUNT(*) FROM users").fetchone()[0],
+            'total_messages':    conn.execute("SELECT COUNT(*) FROM messages").fetchone()[0],
+            'web_messages':      conn.execute("SELECT COUNT(*) FROM messages WHERE sender='WEB'").fetchone()[0],
+            'modem_messages':    conn.execute("SELECT COUNT(*) FROM messages WHERE sender='MODEM'").fetchone()[0],
+            'unread':            conn.execute("SELECT COUNT(*) FROM messages WHERE read=0").fetchone()[0],
+            'pending_contacts':  conn.execute("SELECT COUNT(*) FROM contacts WHERE name IS NULL").fetchone()[0],
         }
-        recent = conn.execute("""
+
+        # Pending (nameless) contacts with message preview
+        pending_contacts = conn.execute('''
+            SELECT
+                c.phone,
+                COUNT(m.id)    AS msg_count,
+                MAX(m.timestamp) AS last_ts,
+                MAX(m.content) AS last_msg
+            FROM contacts c
+            LEFT JOIN messages m ON m.from_number = c.phone
+            WHERE c.name IS NULL
+            GROUP BY c.phone
+            ORDER BY last_ts DESC
+        ''').fetchall()
+
+        recent = conn.execute('''
             SELECT m.id, m.sender, m.content, m.timestamp, m.read, u.username
             FROM messages m LEFT JOIN users u ON m.user_id = u.id
             ORDER BY m.id DESC LIMIT 10
-        """).fetchall()
-    return render_template('admin/dashboard.html', stats=stats, recent=recent)
+        ''').fetchall()
+
+    return render_template('admin/dashboard.html',
+                           stats=stats,
+                           pending_contacts=pending_contacts,
+                           recent=recent)
 
 
-# ── User Management ──────────────────────────────────────────────────────────
+# ── User Management ───────────────────────────────────────────────────────────
 
 @admin_bp.route('/users')
 @admin_required
 def users():
     with _db() as conn:
-        all_users = conn.execute("""
+        all_users = conn.execute('''
             SELECT u.id, u.username, u.phone, u.is_admin,
                    COUNT(m.id) as msg_count
             FROM users u
             LEFT JOIN messages m ON m.user_id = u.id
             GROUP BY u.id
             ORDER BY u.id
-        """).fetchall()
+        ''').fetchall()
     return render_template('admin/users.html', users=all_users)
 
 
@@ -70,7 +89,7 @@ def create_user():
     if request.method == 'POST':
         username = request.form.get('username', '').strip().lower()
         password = request.form.get('password', '')
-        phone    = ''.join(filter(str.isdigit, request.form.get('phone', '')))
+        phone    = request.form.get('phone', '').strip()
         is_admin = 1 if request.form.get('is_admin') else 0
 
         if not username or not password:
@@ -103,7 +122,7 @@ def edit_user(user_id):
 
     if request.method == 'POST':
         username = request.form.get('username', '').strip().lower()
-        phone    = ''.join(filter(str.isdigit, request.form.get('phone', '')))
+        phone    = request.form.get('phone', '').strip()
         is_admin = 1 if request.form.get('is_admin') else 0
         new_pw   = request.form.get('password', '').strip()
 
@@ -131,7 +150,6 @@ def edit_user(user_id):
 @admin_bp.route('/users/<int:user_id>/delete', methods=['POST'])
 @admin_required
 def delete_user(user_id):
-    # Prevent self-deletion
     if user_id == current_user.id:
         flash("You can't delete your own account.")
         return redirect(url_for('admin.users'))
@@ -144,7 +162,7 @@ def delete_user(user_id):
     return redirect(url_for('admin.users'))
 
 
-# ── Message Management ───────────────────────────────────────────────────────
+# ── Message Management ────────────────────────────────────────────────────────
 
 @admin_bp.route('/messages')
 @admin_required
@@ -172,10 +190,10 @@ def messages():
         ).fetchone()[0]
 
         msgs = conn.execute(
-            f"""SELECT m.id, m.sender, m.content, m.timestamp, m.read, u.username
+            f'''SELECT m.id, m.sender, m.content, m.timestamp, m.read, u.username
                 FROM messages m LEFT JOIN users u ON m.user_id = u.id
                 {where_sql}
-                ORDER BY m.id DESC LIMIT ? OFFSET ?""",
+                ORDER BY m.id DESC LIMIT ? OFFSET ?''',
             params + [per_page, offset]
         ).fetchall()
 
